@@ -1,0 +1,48 @@
+{% extends "base_bootstrap.html" %}
+{% block navbar %}
+{% load app_tags %}
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">
+            <span style="color:deepskyblue">Ann Arbor</span>
+            <span style="color:darkorange">Foodie</span></a>
+    </div>
+
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                Category<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'restaurants:all' %}category/Burgers">Burgers</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Japanese">Japanese</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Italian">Italian</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Chinese">Chinese</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Mexican">Mexican</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Thai">Thai</a></li>
+                <li><a href="{% url 'restaurants:all' %}category/Cafe">Cafe</a></li>
+            </ul>
+        </li>
+        <li>
+        <a href="{% url 'restaurants:all' %}">Restaurant List</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                <img style="width: 25px;" src="{{ user|gravatar:60 }}"/><b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'restaurants:my_fav' %}">My Favorites</a></li>
+                <li><a href="{% url 'logout' %}?next={% url 'home:all' %}">Logout</a></li>
+            </ul>
+        </li>
+        {% else %}
+        <li>
+        <a href="{% url 'login' %}?next={% url 'home:all' %}">Login</a>
+        </li>
+        {% endif %}
+    </ul>
+  </div>
+</nav>
+{% endblock %}

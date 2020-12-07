@@ -1,0 +1,180 @@
+{% extends "base_menu.html" %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load app_tags %}
+{% block head %}
+<style>
+    .background_settings{
+        position:fixed;
+        top: 0;
+        left: 0;
+        width:100%;
+        height:100%;
+        min-width: 1000px;
+        z-index:-10;
+        zoom: 1;
+        background-color: #fff;
+        background: url(../../../../media/images/background_img.png);
+        background-repeat: no-repeat;
+        background-size: cover;
+        -webkit-background-size: cover;
+        -o-background-size: cover;
+        background-position: center 0;
+    }
+
+    .flex-container{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .flex-item{
+        background: rgba(0, 128, 0, 0.3);
+        width: 100%;
+        /*display:table-cell;*/
+        height: auto;
+        margin-top: 5px;
+        margin-left: 0;
+        margin-right: 10px;
+        padding: 0px 15px 15px 15px;
+        color: black;
+        font-family: "Gill Sans", sans-serif;
+        font-size: 1.5em;
+        font-weight: bold;
+        line-height: 180%;
+        /*text-align: center;*/
+        overflow: auto;
+    }
+
+    /* unvisited link */
+    a:link {
+        color: darkorange;
+    }
+    /* visited link */
+    a:visited {
+        color: darkmagenta;
+    }
+    /* mouse over link */
+    a:hover {
+        color: deeppink;
+        text-decoration: none;
+    }
+    /* selected link */
+    a:active {
+        color: #800000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="background_settings"></div>
+<div>
+    <div>
+        <img src="{{ restaurant.pic1.url}}" alt="NoImage" style="margin-left:0;margin-right:0.5%;width:32%;height:auto;border:2px solid green">
+        <img src="{{ restaurant.pic2.url}}" alt="NoImage" style="margin-left:0;margin-right:0.5%;width:32%;height:auto;border:2px solid green">
+        <img src="{{ restaurant.pic3.url}}" alt="NoImage" style="margin-left:0;margin-right:0;width:32%;height:auto;border:2px solid green">
+    </div>
+
+    <div class="flex-item">
+        <br>
+        <span style="font-size:2em;">{{restaurant.name}}</span> &nbsp &nbsp
+        {% if user.is_authenticated %}
+        <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+        <a href="#" onclick=
+            "favPost('{% url 'restaurants:res_unfavorite' restaurant.id %}', {{ restaurant.id }} );return false;"
+            {% if restaurant.id not in favorites %} style="display: none;" {% endif %}
+            id="favorite_star_{{restaurant.id}}">
+            <span class="fa-stack" style="vertical-align:middle; font-size:2em; float:right;">
+                <i class="fa fa-star fa-stack-1x" style="color: orange;"></i>
+                <i class="fa fa-star-o fa-stack-1x"></i>
+            </span>
+        </a>
+        <!-- the second href -->
+        <a href="#" onclick=
+             "favPost('{% url 'restaurants:res_favorite' restaurant.id %}', {{ restaurant.id }} );return false;"
+            {% if restaurant.id in favorites %} style="display: none;" {% endif %}
+            id="unfavorite_star_{{restaurant.id}}">
+            <span class="fa-stack" style="vertical-align:middle; font-size:2em; float:right;">
+                <i class="fa fa-star fa-stack-1x" style="display: none; color: orange;"></i>
+                <i class="fa fa-star-o fa-stack-1x"></i>
+            </span>
+        </a>
+        {% endif %}
+        <br>
+        <span style="font-size:0.8em; font-style:italic; color:grey;">{{ restaurant.description }}</span><br>
+        <span style="color:red;">
+            <script>
+                var a = Math.floor({{restaurant.rating}} / 2);
+                var b = {{restaurant.rating}} % 2;
+                var i;
+                for (i=0; i<a; i++){
+                    document.write('<i class="fa fa-star" aria-hidden="true"></i>');
+                }
+                if (b){
+                    document.write('<i class="fa fa-star-o" aria-hidden="true"></i>');
+                }
+            </script>
+        </span><br>
+        <span style="color:black;">{{restaurant.price}}&nbsp &middot &nbsp{{restaurant.category}}</span><br>
+        <span style="font-size:0.8em; color:dimgrey;">{{restaurant.location}}</span><br>
+        <span style="font-size:0.8em; color:black;">
+            {% if restaurant.tag1 %}<i class="fa fa-check-circle" aria-hidden="true" style="color:green;"></i>{{restaurant.tag1}}{% endif %}&nbsp
+            {% if restaurant.tag2 %}<i class="fa fa-check-circle" aria-hidden="true" style="color:green;"></i>{{restaurant.tag2}}{% endif %}&nbsp
+            {% if restaurant.tag3 %}<i class="fa fa-check-circle" aria-hidden="true" style="color:green;"></i>{{restaurant.tag3}}{% endif %}&nbsp
+        </span>
+        <br>
+        {% if restaurant.owner == user %}
+        <div style="padding:10px;">
+            <a href="{% url 'restaurants:res_update' restaurant.id %}"><i class="fa fa-pencil" style="font-size:30px;color:blue;"></i></a> &nbsp
+            <a href="{% url 'restaurants:res_delete' restaurant.id %}"><i class="fa fa-trash" style="font-size:30px;color:red;"></i></a>
+        </div>
+        {% endif %}
+
+    </div>
+
+
+</div>
+
+{% if user.is_authenticated %}
+<br clear="all"/>
+<p>
+{% load crispy_forms_tags %}
+<form method="post" action="{% url 'restaurants:res_comment_create' restaurant.id %}" style="width:60%;">
+    {% csrf_token %}
+    {{ comment_form|crispy }}
+    <input type="submit" value="Submit">
+    <input type="submit" value="Back to restaurant list" onclick="window.location.href='{% url 'restaurants:all' %}';return false;">
+</form>
+</p>
+{% endif %}
+<br>
+{% for comment in comments %}
+<p style="font-size: 20px; font-family: system-ui;">
+    <img style="width: 25px;" src="{{ comment.owner|gravatar:60 }}"/>
+    <span style="font-weight:bold;">{{comment.owner}}: &nbsp</span>
+    {{ comment.text }}
+    <span style="font-size: 15px; font-family: system-ui; font-style:italic;">
+        &nbsp &nbsp (posted {{ comment.updated_at|naturaltime }}) &nbsp &nbsp
+    </span>
+    {% if user == comment.owner %}
+    <a href="{% url 'restaurants:res_comment_delete' comment.id %}"><i class="fa fa-trash" style="color:red;"></i></a>
+    {% endif %}
+    <hr width=100% style="border:1px dashed grey; height:1px;">
+</p>
+{% endfor %}
+
+<script>
+function favPost(url, ad_id) {
+    console.log('Requesting JSON');
+    $.post(url, {},  function(rowz){
+        console.log(url, 'finished');
+        $("#unfavorite_star_"+ad_id).toggle();
+        $("#favorite_star_"+ad_id).toggle();
+    }).fail(function(xhr) {
+        alert('Url failed with '+xhr.status+' '+url);
+    });
+}
+</script>
+{% endblock %}
